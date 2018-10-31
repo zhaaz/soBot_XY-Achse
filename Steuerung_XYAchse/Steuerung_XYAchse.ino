@@ -60,7 +60,7 @@ long valueTwoIn;
  
 /*
  * /////////////////////////////////////////////////////////////////////////////
- *                             MAIN LOOP
+ *                             SETUP
  * /////////////////////////////////////////////////////////////////////////////
  */
 
@@ -137,7 +137,7 @@ void loop() {
       break;
       
       case 'K':
-      Serial.println("Case B");
+      Serial.println("Case K");
       Serial.println("Markiere...");
       makeCircle(1000);
       makeXTarget(1000);
