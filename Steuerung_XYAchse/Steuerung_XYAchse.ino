@@ -7,7 +7,12 @@
  * - Bewegung auf spezifische Position
  * - Erzeugen von Kreis mit unterschiedlichem Radius
  * - Erzeugen von Kreuz mit unterschiedlicher Kantenlänge
- * - laser On / Off
+ * - Laser On / Off
+ * - Serielle Kommunikation:
+ *    + M,XXXX,YYYY     Bewegung zur Position X,Y
+ *    + R,XXXX,YYYY     Relative Bewegung um X und Y
+ *    + U               Bewegung zur Ausgangsstellung (7500, 7500)
+ *    + K               Markiere Kreis und Kreuz (ACHTUNG, VERWENDET LASER!)
  */
  
 #include <AccelStepper.h>
@@ -39,6 +44,19 @@ int triggerValX = 0;
 
 long SCHRANKE_X = 15000;
 long SCHRANKE_Y = 15000;
+
+
+const int numChars = 256;
+char receivedChars[numChars];
+
+bool newData = false;
+
+char commandIndex[32] = {0};
+long numValue;
+
+char commandIn;
+long valueOneIn;
+long valueTwoIn; 
  
 /*
  * /////////////////////////////////////////////////////////////////////////////
@@ -84,18 +102,11 @@ void setup() {
   stepperX.setCurrentPosition(200);
   delay(2000);
   moveXTo(7500);      // Mitte X Achse
-//
-//  moveYToTrigger();
-//  stepperY.setCurrentPosition(-1500);
-//  moveYTo(7500);
-//
-//  delay(2000);
-//  makeCircle(2000);
 
+  moveYToTrigger();
+  stepperY.setCurrentPosition(-1500);
+  moveYTo(7500);
 
-//  delay(2000);
-//  makeXTarget(500);
-//  makeCircle(500);
 
   
 }
@@ -107,7 +118,49 @@ void setup() {
  */
  
 void loop() {
-  
+  recvWithEndMarker();
+  delay(100);
+  if(newData == true){
+    parseData();
+    // showParsedData();
+    newData = false;
+
+    switch(commandIndex[0]){
+      case 'M':
+      // Bewegung zur X / Y Koordinate
+      Serial.println("Case M");
+      Serial.print("Bewege auf Position: ");
+      Serial.print(valueOneIn);
+      Serial.print("/");
+      Serial.println(valueTwoIn);
+      moveXY(valueOneIn, valueTwoIn);
+      break;
+      
+      case 'K':
+      Serial.println("Case B");
+      Serial.println("Markiere...");
+      makeCircle(1000);
+      makeXTarget(1000);
+
+      case 'R':
+      // Relative Bewegung zum letzten Standpunkt
+      Serial.println("Case R");
+      Serial.print("Bewege relativ um: ");
+      Serial.print(valueOneIn);
+      Serial.print("/");
+      Serial.println(valueTwoIn);
+      moveXYrelative(valueOneIn, valueTwoIn);
+      break;
+
+      case 'U':
+      // Bewegung zur Mittelposition
+      Serial.println("Case U");
+      Serial.print("Bewege auf Mittelposition... ");
+      moveXY(7500,7500);
+      break;
+    }
+    
+  }
 }
 
 /*
@@ -241,3 +294,51 @@ void laserOn(){
 void laserOff(){
   digitalWrite(laserPin, LOW);
 }
+
+
+void recvWithEndMarker(){
+  static int ndx = 0;
+  char endMarker = '\n';
+  char rc;
+
+  while(Serial.available() > 0 && newData == false){
+    rc = Serial.read();
+
+    if(rc != endMarker){
+      receivedChars[ndx] = rc; 
+      ndx++;
+      if(ndx >= numChars){
+        ndx = numChars - 1;
+      }
+    }else{
+      receivedChars[ndx] = '\0';  // Terminate String
+      ndx = 0;
+      newData = true;
+    }
+  }
+}
+
+void parseData(){
+  // Daten splitten bei Trennzeichen ","
+  char * strtokIndx; // commandIndex für strtok()
+
+  strtokIndx = strtok(receivedChars,","); // Ersten Teil
+  strcpy(commandIndex, strtokIndx);
+
+  strtokIndx = strtok(NULL, ",");
+  valueOneIn = atol(strtokIndx);
+
+  strtokIndx = strtok(NULL, ",");
+  valueTwoIn = atol(strtokIndx);
+    
+}
+
+void showParsedData(){
+  Serial.print("Befehl: ");
+  Serial.println(commandIndex);
+  Serial.print("Value1: ");
+  Serial.println(valueOneIn);
+  Serial.print("Value2: ");
+  Serial.println(valueTwoIn);
+}
+
