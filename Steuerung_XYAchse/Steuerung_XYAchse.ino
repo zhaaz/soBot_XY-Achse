@@ -236,7 +236,7 @@ void makeCircle(long radius){
   float i = 0;
   motorsOn();
   long positions[2];
-  while(i <= 6.4){
+  while(i <= 6.8){
     long dX = long(cos(i)*radius);
     long dY = long(sin(i)*radius);
     positions[0] = xPos + dX;
@@ -246,7 +246,7 @@ void makeCircle(long radius){
     if(i == 0){
       laserOn();
     }
-    i =  i + 0.01;
+    i =  i + 0.005k;
   }
   laserOff();
   positions[0] = xPos;  // Wieder auf Ausgangsposition
