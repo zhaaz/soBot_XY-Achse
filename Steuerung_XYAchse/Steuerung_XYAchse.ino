@@ -11,8 +11,14 @@
  * - Serielle Kommunikation:
  *    + M,XXXX,YYYY     Bewegung zur Position X,Y
  *    + R,XXXX,YYYY     Relative Bewegung um X und Y
- *    + U               Bewegung zur Ausgangsstellung (7500, 7500)
- *    + K               Markiere Kreis und Kreuz (ACHTUNG, VERWENDET LASER!)
+ *    + C               Bewegung zur Ausgangsstellung (7500, 7500)
+ *    + K               Markiere Kreis und X-Target       (ACHTUNG, VERWENDET LASER!)
+ *    + P               Konzentrische Kreise              (ACHTUNG, VERWENDET LASER!)
+ *    + X               X-Target                          (ACHTUNG, VERWENDET LASER!)
+ *    + V               Konzentrische Kreise und X-Target (ACHTUNG, VERWENDET LASER!)
+ *    + L               Lock Motor
+ *    + U               Unlock Motor
+ *    + T               TriggerPunkte
  */
  
 #include <AccelStepper.h>
@@ -97,17 +103,6 @@ void setup() {
 
   steppers.addStepper(stepperX);
   steppers.addStepper(stepperY);
-
-  moveXToTrigger();
-  stepperX.setCurrentPosition(200);
-  delay(2000);
-  moveXTo(7500);      // Mitte X Achse
-
-  moveYToTrigger();
-  stepperY.setCurrentPosition(-1500);
-  moveYTo(7500);
-
-
   
 }
 
@@ -152,12 +147,70 @@ void loop() {
       moveXYrelative(valueOneIn, valueTwoIn);
       break;
 
-      case 'U':
+      case 'C':
       // Bewegung zur Mittelposition
-      Serial.println("Case U");
+      Serial.println("Case C");
       Serial.print("Bewege auf Mittelposition... ");
       moveXY(7500,7500);
       break;
+
+      case 'P':
+      // Konzentrische Kreise
+      Serial.println("Case P");
+      Serial.println("Markiere...");
+      makeCircle(500);
+      makeCircle(250);
+      makeCircle(50);
+      break;
+
+      case 'X':
+      // Ein X Target
+      Serial.println("Case X");
+      Serial.println("Markiere...");
+      makeXTarget(500);
+      break;
+
+      case 'V':
+      // Konzentrische Kreise mit einem X
+      Serial.println("Case V");
+      Serial.println("Markiere...");
+      makeCircle(500);
+      makeCircle(250);
+      makeCircle(50);
+      makeXTarget(500);
+      break;
+
+      case 'L':
+      // Lock Motors (Motoren an)
+      Serial.println("Case L");
+      Serial.println("Motoren an...");
+      motorsOn();
+      break;
+
+      case 'U':
+      // Unlock Motors (Motoren aus)
+      Serial.println("Case U");
+      Serial.println("Motoren aus...");
+      motorsOff();
+      break;
+
+
+      case 'T':
+      // Trigger Positionen setzen
+      Serial.println("Case T");
+      Serial.println("Fahre Endpunkte an.");
+      moveXToTrigger();
+      stepperX.setCurrentPosition(200);
+      delay(2000);
+      moveXTo(7500);      // Mitte X Achse
+
+      moveYToTrigger();
+      stepperY.setCurrentPosition(-1500);
+      moveYTo(7500);
+      break;
+
+
+
     }
     
   }
@@ -239,14 +292,14 @@ void makeCircle(long radius){
   while(i <= 6.8){
     long dX = long(cos(i)*radius);
     long dY = long(sin(i)*radius);
-    positions[0] = xPos + dX;
+    positions[0] = xPos+ dX;
     positions[1] = yPos + dY;
     steppers.moveTo(positions);
     steppers.runSpeedToPosition();
     if(i == 0){
       laserOn();
     }
-    i =  i + 0.005k;
+    i =  i + 0.005;
   }
   laserOff();
   positions[0] = xPos;  // Wieder auf Ausgangsposition
@@ -266,14 +319,16 @@ void makeXTarget(long diameter){
  
   moveXY(posX, posY - diameter);
   laserOn();
-  delay(20);
+  delay(100);
   moveXY(posX, posY + diameter);
   laserOff();
+  delay(20);
   moveXY(posX - diameter, posY);
   laserOn();
-  delay(20);
+  delay(100);
   moveXY(posX + diameter, posY);
   laserOff();
+  delay(20);
   moveXY(posX, posY);
 }
 
