@@ -209,6 +209,12 @@ void loop() {
       moveYTo(7500);
       break;
 
+      default:
+      // Wenn Befehl nicht bekannt.
+      Serial.println("<ERROR: Befehl nicht bekannt...>");
+      break;
+
+
 
 
     }
