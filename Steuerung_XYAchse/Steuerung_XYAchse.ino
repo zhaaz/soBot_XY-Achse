@@ -103,7 +103,8 @@ void setup() {
 
   steppers.addStepper(stepperX);
   steppers.addStepper(stepperY);
-  
+
+  Serial.println("Arduino XY - Achse bereit.");
 }
 
 /*
@@ -122,83 +123,74 @@ void loop() {
 
     switch(commandIndex[0]){
       case 'M':
-      // Bewegung zur X / Y Koordinate
-      Serial.println("Case M");
-      Serial.print("Bewege auf Position: ");
-      Serial.print(valueOneIn);
-      Serial.print("/");
-      Serial.println(valueTwoIn);
+      // Bewegung zur X / Y Koordinate    
       moveXY(valueOneIn, valueTwoIn);
+      Serial.print("XY ok [M], zu ");
+      Serial.print(valueOneIn);
+      Serial.print(" ; ");
+      Serial.print(valueTwoIn);
+      Serial.println(" gefahren.");
       break;
       
       case 'K':
-      Serial.println("Case K");
-      Serial.println("Markiere...");
       makeCircle(1000);
       makeXTarget(1000);
+      Serial.println("ok [K], Kreis und X markiert.");
 
       case 'R':
       // Relative Bewegung zum letzten Standpunkt
-      Serial.println("Case R");
-      Serial.print("Bewege relativ um: ");
-      Serial.print(valueOneIn);
-      Serial.print("/");
-      Serial.println(valueTwoIn);
       moveXYrelative(valueOneIn, valueTwoIn);
+      Serial.print("XY ok [R], relativ gefahren. Delta X = ");
+      Serial.print(valueOneIn);
+      Serial.print(" ; Delta Y = ");
+      Serial.print(valueTwoIn);
+      Serial.println(".");
       break;
 
       case 'C':
       // Bewegung zur Mittelposition
-      Serial.println("Case C");
-      Serial.print("Bewege auf Mittelposition... ");
       moveXY(7500,7500);
+      Serial.println("XY ok [C], auf Mittelposition gefahren.");
       break;
 
       case 'P':
       // Konzentrische Kreise
-      Serial.println("Case P");
-      Serial.println("Markiere...");
       makeCircle(500);
       makeCircle(250);
       makeCircle(50);
+      Serial.println("XY ok [P], konzentrische Kreise markiert.");
       break;
 
       case 'X':
       // Ein X Target
-      Serial.println("Case X");
-      Serial.println("Markiere...");
-      makeXTarget(500);
+      makeXTarget(500);   
+      Serial.println("XY ok [X], X - Target markiert.");
       break;
 
-      case 'V':
+      case 'V': 
       // Konzentrische Kreise mit einem X
-      Serial.println("Case V");
-      Serial.println("Markiere...");
       makeCircle(500);
       makeCircle(250);
       makeCircle(50);
       makeXTarget(500);
+      Serial.println("XY ok [V], konzentrische Kreise mit X - Target markiert.");
       break;
 
       case 'L':
       // Lock Motors (Motoren an)
-      Serial.println("Case L");
-      Serial.println("Motoren an...");
       motorsOn();
+      Serial.println("XY ok [L], Motoren an.");
       break;
 
       case 'U':
       // Unlock Motors (Motoren aus)
-      Serial.println("Case U");
-      Serial.println("Motoren aus...");
       motorsOff();
+      Serial.println("XY ok [U], Motoren aus.");
       break;
 
 
       case 'T':
       // Trigger Positionen setzen
-      Serial.println("Case T");
-      Serial.println("Fahre Endpunkte an.");
       moveXToTrigger();
       stepperX.setCurrentPosition(200);
       delay(2000);
@@ -207,13 +199,13 @@ void loop() {
       moveYToTrigger();
       stepperY.setCurrentPosition(-1500);
       moveYTo(7500);
+      Serial.println("XY ok [T], Trigger angefahren, Arbeitsbereich gesetzt.");
       break;
 
       default:
       // Wenn Befehl nicht bekannt.
-      Serial.println("<ERROR: Befehl nicht bekannt...>");
+      Serial.println("<XY ERROR: Befehl nicht bekannt...>");
       break;
-
 
 
 
